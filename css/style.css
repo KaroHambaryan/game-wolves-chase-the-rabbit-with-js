@@ -1,0 +1,170 @@
+/* body */
+body{
+	position: relative;
+}
+/* app */
+.game{
+	display: flex;
+	justify-content: center;
+}
+
+/* gameground */
+.game__wrapper{
+	width: 600px;
+	height: 600px;
+}
+
+.background-aqua{
+	background-color: aqua;
+}
+
+.flex-column-center{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+/* board */
+.flex-wrapp-owerflow{
+	display: flex;
+	flex-wrap: wrap;
+	overflow: hidden;
+}
+
+.background-light-pink{
+	background-color: rgb(201, 201, 217);
+}
+
+.board-position{
+	position: relative;
+}
+
+/* Buttons Block */
+.buttons__wrapper{
+	display: flex;
+	align-items: end;
+	background-color: black;
+}
+
+.flex-nowrapp{
+	display: flex;
+	flex-wrap: nowrap;
+}
+
+.flex-column{
+	display: flex;
+	flex-direction: column;
+}
+
+.background-red{
+	background-color: red;
+}
+
+/* Button */
+.button{
+	width: 30px;
+	height: 20px;
+}
+
+/* cell */
+.cell{
+	width: 40px;
+	height: 40px;
+	background-color: blueviolet;
+	border: 1px solid black;
+}
+
+/* rabbit */
+.rabbit{
+	position: absolute;
+	display: block;
+	width: 40px;
+	height: 40px;
+	background-image: url('../image/rabbit.png');
+	background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* wolf */
+.wolf{
+	position: absolute;
+	display: block;
+	width: 40px;
+	height: 40px;
+	background-image: url('../image/wolf.png');
+	background-size: cover;
+  background-repeat: no-repeat;
+	transition: all 0.5s ease-out;
+}
+
+/* barrier */
+.barrier{
+	position: absolute;
+	display: block;
+	width: 40px;
+	height: 40px;
+	background-image: url('../image/barrier.png');
+	background-size: cover;
+  background-repeat: no-repeat;
+	transition: all 0.5s ease-out;
+}
+
+/* home */
+.home{
+	position: absolute;
+	display: block;
+	width: 40px;
+	height: 40px;
+	background-image: url('../image/home.png');
+	background-size: cover;
+  background-repeat: no-repeat;
+	transition: all 0.5s ease-out;
+}
+
+/* scoreboard */
+.scoreboard{
+	width: 100%;
+	height: 100%;
+}
+
+.background-black-04{
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+.scoreboard-position{
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.flex-all-centring{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.scoreboard-content__wrapper{
+	width: 500px;
+	height: 500px;
+}
+
+.flex-column-all-centring{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.background-black-07{
+	background-color:rgba(4, 4, 4, 0.7);
+}
+
+.text-style{
+	font-size: 30px;
+	color: rgb(6, 241, 6);
+}
+
+/* display - none */
+.display-none{
+	display: none;
+}
