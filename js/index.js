@@ -12,26 +12,29 @@ function Game() {
 	this.barrier = 'barrier';
 	this.wolf = 'wolf';
 	this.cell = 'cell';
-	this.bpardSize = 5;
+	this.boardSize = 5;
+	this.incrementCoefficient = 2;
 	this.numberOfParticipants = 7;
 	this.numberOfWolves = 3;
 	this.numberOfBarriers = 2;
 	this.wolfNeighborCell = [];
 	this.matrix = [];
+	this.boardElements = new Array(5).fill(0).map(() => new Array(5).fill(0).map(className => className = 'cell'));
 }
 
 Game.prototype.setParticipants = function (x) {
-	this.bpardSize = x;
-	this.numberOfParticipants = this.bpardSize + 2;
-	this.numberOfWolves = this.bpardSize === 5 ? 3 : this.bpardSize === 7 ? 4 : this.bpardSize === 10 ? 5 : this.bpardSize === 15 ? 8 : this.bpardSize === 20 ? 10 : 0;
-	this.numberOfBarriers = this.numberOfParticipants - this.numberOfWolves;
+	this.boardSize = x;
+	this.boardElements = new Array(this.boardSize).fill(0).map(() => new Array(this.boardSize).fill(0).map(className => className = 'cell'));
+	this.numberOfParticipants = this.boardSize + this.incrementCoefficient;
+	this.numberOfWolves = Math.floor((this.numberOfParticipants - this.incrementCoefficient) * 60 / 100);
+	this.numberOfBarriers = (this.numberOfParticipants - this.incrementCoefficient) - this.numberOfWolves;
 	this.createRandomCoords();
 };
 
 Game.prototype.createRandomCoords = function () {
 	this.randomCoords = [];
 	while (this.randomCoords.length < this.numberOfParticipants) {
-		const randomXY = { x: Math.floor(Math.random() * this.bpardSize), y: Math.floor(Math.random() * this.bpardSize) };
+		const randomXY = { x: Math.floor(Math.random() * this.boardSize), y: Math.floor(Math.random() * this.boardSize) };
 		const isCoordsMatch = this.ifThereIsA(this.randomCoords, randomXY);
 		if (!isCoordsMatch) {
 			this.randomCoords.push(randomXY);
@@ -45,60 +48,6 @@ Game.prototype.filterRandomCoordinates = function () {
 	this.barriersPos = this.randomCoords.slice(this.numberOfWolves, this.randomCoords.length - 2);
 	this.rabbitPos = this.randomCoords[this.randomCoords.length - 2];
 	this.housePos = this.randomCoords[this.randomCoords.length - 1];
-};
-
-Game.prototype.ifThereIsA = function (into, it) {
-	return into.some(e => e.x === it.x && e.y === it.y);
-};
-
-Game.prototype.renderBoard = function (ifRender = false) {
-	this.board.innerHTML = null;
-	this.matrix = [];
-	this.wolfNeighborCell = [];
-	for (let i = 0; i < this.bpardSize; i++) {
-		const div = document.createElement('div');
-		const inMatrixColl = [];
-		for (let j = 0; j < this.bpardSize; j++) {
-			const cell = document.createElement('div');
-			const ifWolf = this.ifThereIsA(this.wolvesPos, { x: i, y: j });
-			const ifBarrier = this.ifThereIsA(this.barriersPos, { x: i, y: j });
-			let g = Math.pow(Math.abs(this.rabbitPos.x - i), 2) + Math.pow(Math.abs(this.rabbitPos.y - j), 2);
-			if (ifRender && (this.rabbitPos.x === i && this.rabbitPos.y === j)) {
-				cell.classList.add(this.rabbit);
-				inMatrixColl.push({ g, x: i, y: j });
-			} else if (ifRender && ifWolf) {
-				cell.classList.add(this.wolf);
-				inMatrixColl.push({ g, x: i, y: j });
-				let newNeighborWolf = [];
-				(i < this.bpardSize - 1) && newNeighborWolf.push({ x: i + 1, y: j });
-				(i > 0) && newNeighborWolf.push({ x: i - 1, y: j });
-				(j > 0) && newNeighborWolf.push({ x: i, y: j - 1 });
-				(j < this.bpardSize - 1) && newNeighborWolf.push({ x: i, y: j + 1 });
-				this.wolfNeighborCell.push(newNeighborWolf);
-			} else if (ifRender && (this.housePos.x === i && this.housePos.y === j)) {
-				cell.classList.add(this.house);
-			} else if (ifRender && ifBarrier) {
-				cell.classList.add(this.barrier);
-			} else {
-				cell.classList.add(this.cell);
-				inMatrixColl.push({ g, x: i, y: j });
-			}
-			div.append(cell);
-		}
-		this.board.append(div);
-		this.matrix.push(inMatrixColl);
-	}
-	this.matrix = this.matrix.flat();
-};
-
-Game.prototype.wolfStep = function () {
-	this.wolvesPos = this.wolfNeighborCell.map((elem) => {
-		const wolvesNeighbor = this.matrix.filter(matrixElem => this.ifThereIsA(elem, matrixElem));
-		const min = Math.min(...wolvesNeighbor.map(wolf => wolf.g));
-		const wolf = wolvesNeighbor.find(wolf => wolf.g === min);
-		this.matrix.splice(this.matrix.indexOf(wolf), 1);
-		return wolf;
-	});
 };
 
 Game.prototype.rabbitStep = function (actionType) {
@@ -119,15 +68,86 @@ Game.prototype.rabbitStep = function (actionType) {
 			break;
 	}
 	this.rabbitPos = this.ifThereIsA(this.barriersPos, this.rabbitPos) ? { x: tempX, y: tempY } : this.rabbitPos;
-	this.ifBorder();
+	this.checkRabbitPosition();
 };
 
-Game.prototype.ifBorder = function () {
-	this.rabbitPos.y = (this.rabbitPos.y + this.bpardSize) % this.bpardSize;
-	this.rabbitPos.y = this.ifThereIsA(this.barriersPos, this.rabbitPos) ? (this.rabbitPos.y === 0 ? this.bpardSize - 1 : 0) : this.rabbitPos.y;
-	this.rabbitPos.x = (this.rabbitPos.x + this.bpardSize) % this.bpardSize;
-	this.rabbitPos.x = this.ifThereIsA(this.barriersPos, this.rabbitPos) ? (this.rabbitPos.x === 0 ? this.bpardSize - 1 : 0) : this.rabbitPos.x;
+Game.prototype.checkRabbitPosition = function () {
+	this.rabbitPos.y = (this.rabbitPos.y + this.boardSize) % this.boardSize;
+	this.rabbitPos.y = this.ifThereIsA(this.barriersPos, this.rabbitPos) ? (this.rabbitPos.y === 0 ? this.boardSize - 1 : 0) : this.rabbitPos.y;
+	this.rabbitPos.x = (this.rabbitPos.x + this.boardSize) % this.boardSize;
+	this.rabbitPos.x = this.ifThereIsA(this.barriersPos, this.rabbitPos) ? (this.rabbitPos.x === 0 ? this.boardSize - 1 : 0) : this.rabbitPos.x;
+	this.createBoardElements();
 };
+
+Game.prototype.wolfStep = function () {
+	this.wolvesPos = this.wolfNeighborCell.map(elem => {
+		const wolvesNeighbor = this.matrix.filter(matrixElem => this.ifThereIsA(elem, matrixElem));
+		const min = Math.min(...wolvesNeighbor.map(wolf => wolf.g));
+		const wolf = wolvesNeighbor.find(wolf => wolf.g === min);
+		this.matrix.splice(this.matrix.indexOf(wolf), 1);
+		return wolf;
+	});
+	this.createBoardElements();
+};
+
+Game.prototype.createBoardElements = function () {
+	const ArrayOfColumns = [];
+	const matrixForCount = [];
+	const wolfNeighborCell = [];
+	for (let i = 0; i < this.boardSize; i++) {
+		const column = [];
+		const inMatrixColl = [];
+		for (let j = 0; j < this.boardSize; j++) {
+			const g = Math.pow(Math.abs(this.rabbitPos.x - i), 2) + Math.pow(Math.abs(this.rabbitPos.y - j), 2);
+			const ifRabbit = this.ifThereIsA([this.rabbitPos], { x: i, y: j });
+			const ifHouse = this.ifThereIsA([this.housePos], { x: i, y: j });
+			const ifBarrier = this.ifThereIsA(this.barriersPos, { x: i, y: j });
+			const ifWolf = this.ifThereIsA(this.wolvesPos, { x: i, y: j });
+			if (ifWolf) {
+				column.push(this.wolf);
+				inMatrixColl.push({ g, x: i, y: j });
+				const newNeighborWolf = [];
+				if (i < this.boardSize - 1) { newNeighborWolf.push({ x: i + 1, y: j }) };
+				if (i > 0) { newNeighborWolf.push({ x: i - 1, y: j }) };
+				if (j > 0) { newNeighborWolf.push({ x: i, y: j - 1 }) };
+				if (j < this.boardSize - 1) { newNeighborWolf.push({ x: i, y: j + 1 }) };
+				wolfNeighborCell.push(newNeighborWolf);
+			} else if (ifRabbit) {
+				column.push(this.rabbit);
+				inMatrixColl.push({ g, x: i, y: j });
+			} else if (ifBarrier) {
+				column.push(this.barrier);
+			} else if (ifHouse) {
+				column.push(this.house);
+			} else {
+				column.push(this.cell);
+				inMatrixColl.push({ g, x: i, y: j });
+			}
+		}
+		matrixForCount.push(inMatrixColl);
+		ArrayOfColumns.push(column);
+	}
+	this.wolfNeighborCell = wolfNeighborCell;
+	this.matrix = matrixForCount.flat();
+	this.boardElements = ArrayOfColumns;
+};
+
+Game.prototype.ifThereIsA = function (into, it) {
+	return into.some(e => (e.x === it.x) && (e.y === it.y));
+};
+
+Game.prototype.render = function () {
+	this.board.innerHTML = null;
+	this.boardElements.forEach(classesArray => {
+		const column = document.createElement('div');
+		classesArray.forEach(className => {
+			const cell = document.createElement('div');
+			cell.classList.add(className);
+			column.append(cell);
+		});
+		this.board.append(column);
+	});
+}
 
 Game.prototype.checkVictory = function () {
 	const rabbitWins = this.housePos.x === this.rabbitPos.x && this.housePos.y === this.rabbitPos.y;
@@ -141,7 +161,7 @@ Game.prototype.checkVictory = function () {
 };
 
 let a = new Game();
-a.renderBoard();
+a.render();
 
 const body = document.body;
 const info = document.getElementById('info');
@@ -149,7 +169,7 @@ const info = document.getElementById('info');
 body.addEventListener('change', change);
 function change(e) {
 	a.setParticipants(+e.target.value);
-	a.renderBoard();
+	a.render();
 	e.stopPropagation();
 }
 
@@ -158,16 +178,15 @@ function clickAction(e) {
 	switch (e.target.value) {
 		case 'start':
 			a.createRandomCoords();
-			a.renderBoard(true);
+			a.createBoardElements();
+			a.render();
 			info.classList.add('display-none');
 			break;
 		case 'up': case 'down': case 'left': case 'right':
 			a.rabbitStep(e.target.value);
-			a.renderBoard(true);
-			a.checkVictory()
 			a.wolfStep();
-			a.renderBoard(true);
-			a.checkVictory();
+			a.render();
+			a.checkVictory()
 			break;
 	}
 	e.stopPropagation();
