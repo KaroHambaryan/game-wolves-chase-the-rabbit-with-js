@@ -1,157 +1,157 @@
 'use strict';
 
-function Game() {
-	this.board = document.getElementById('board');
-	this.randomCoords = [];
-	this.rabbitPos = { x: 0, y: 0 };
-	this.housePos = { x: 4, y: 4 };
-	this.wolvesPos = [{ x: 2, y: 2 }, { x: 3, y: 3 }, { x: 1, y: 4 }];
-	this.barriersPos = [{ x: 4, y: 3 }, { x: 3, y: 2 }];
-	this.rabbit = 'rabbit';
-	this.house = 'home';
-	this.barrier = 'barrier';
-	this.wolf = 'wolf';
-	this.cell = 'cell';
-	this.boardSize = 5;
-	this.incrementCoefficient = 2;
-	this.numberOfParticipants = 7;
-	this.numberOfWolves = 3;
-	this.numberOfBarriers = 2;
-	this.wolfNeighborCell = [];
-	this.matrix = [];
-	this.boardElements = new Array(5).fill(0).map(() => new Array(5).fill(0).map(className => className = 'cell'));
+const game = {
+	board: document.getElementById('board'),
+	randomCoords: [],
+	rabbitPos: { x: 0, y: 0 },
+	housePos: { x: 4, y: 4 },
+	wolvesPos: [{ x: 2, y: 2 }, { x: 3, y: 3 }, { x: 1, y: 4 }],
+	barriersPos: [{ x: 4, y: 3 }, { x: 3, y: 2 }],
+	rabbit: 'rabbit',
+	house: 'home',
+	barrier: 'barrier',
+	wolf: 'wolf',
+	cell: 'cell',
+	boardSize: 5,
+	incrementCoefficient: 2,
+	numberOfParticipants: 7,
+	numberOfWolves: 3,
+	numberOfBarriers: 2,
+	wolfNeighborCell: [],
+	matrix: [],
+	boardElements: new Array(5).fill(0).map(() => new Array(5).fill(0).map(className => className = 'cell')),
 }
 
-Game.prototype.setParticipants = function (x) {
-	this.boardSize = x;
-	this.boardElements = new Array(this.boardSize).fill(0).map(() => new Array(this.boardSize).fill(0).map(className => className = 'cell'));
-	this.numberOfParticipants = this.boardSize + this.incrementCoefficient;
-	this.numberOfWolves = Math.floor((this.numberOfParticipants - this.incrementCoefficient) * 60 / 100);
-	this.numberOfBarriers = (this.numberOfParticipants - this.incrementCoefficient) - this.numberOfWolves;
-	this.createRandomCoords();
+const setParticipants = (x) => {
+	game.boardSize = x;
+	game.boardElements = new Array(game.boardSize).fill(0).map(() => new Array(game.boardSize).fill(0).map(className => className = 'cell'));
+	game.numberOfParticipants = game.boardSize + game.incrementCoefficient;
+	game.numberOfWolves = Math.floor((game.numberOfParticipants - game.incrementCoefficient) * 60 / 100);
+	game.numberOfBarriers = (game.numberOfParticipants - game.incrementCoefficient) - game.numberOfWolves;
+	createRandomCoords();
 };
 
-Game.prototype.createRandomCoords = function () {
-	this.randomCoords = [];
-	while (this.randomCoords.length < this.numberOfParticipants) {
-		const randomXY = { x: Math.floor(Math.random() * this.boardSize), y: Math.floor(Math.random() * this.boardSize) };
-		const isCoordsMatch = this.ifThereIsA(this.randomCoords, randomXY);
+const createRandomCoords = () => {
+	game.randomCoords = [];
+	while (game.randomCoords.length < game.numberOfParticipants) {
+		const randomXY = { x: Math.floor(Math.random() * game.boardSize), y: Math.floor(Math.random() * game.boardSize) };
+		const isCoordsMatch = ifThereIsA(game.randomCoords, randomXY);
 		if (!isCoordsMatch) {
-			this.randomCoords.push(randomXY);
+			game.randomCoords.push(randomXY);
 		}
 	}
-	this.filterRandomCoordinates();
+	filterRandomCoordinates();
 };
 
-Game.prototype.filterRandomCoordinates = function () {
-	this.wolvesPos = this.randomCoords.slice(0, this.numberOfWolves);
-	this.barriersPos = this.randomCoords.slice(this.numberOfWolves, this.randomCoords.length - 2);
-	this.rabbitPos = this.randomCoords[this.randomCoords.length - 2];
-	this.housePos = this.randomCoords[this.randomCoords.length - 1];
+const filterRandomCoordinates = () => {
+	game.wolvesPos = game.randomCoords.slice(0, game.numberOfWolves);
+	game.barriersPos = game.randomCoords.slice(game.numberOfWolves, game.randomCoords.length - 2);
+	game.rabbitPos = game.randomCoords[game.randomCoords.length - 2];
+	game.housePos = game.randomCoords[game.randomCoords.length - 1];
 };
 
-Game.prototype.rabbitStep = function (actionType) {
-	const tempY = this.rabbitPos.y;
-	const tempX = this.rabbitPos.x;
+const rabbitStep = (actionType) => {
+	const tempY = game.rabbitPos.y;
+	const tempX = game.rabbitPos.x;
 	switch (actionType) {
 		case "up":
-			this.rabbitPos.y--;
+			game.rabbitPos.y--;
 			break;
 		case "down":
-			this.rabbitPos.y++;
+			game.rabbitPos.y++;
 			break;
 		case "left":
-			this.rabbitPos.x--;
+			game.rabbitPos.x--;
 			break;
 		case "right":
-			this.rabbitPos.x++
+			game.rabbitPos.x++
 			break;
 	}
-	this.rabbitPos = this.ifThereIsA(this.barriersPos, this.rabbitPos) ? { x: tempX, y: tempY } : this.rabbitPos;
-	this.checkRabbitPosition();
+	game.rabbitPos = ifThereIsA(game.barriersPos, game.rabbitPos) ? { x: tempX, y: tempY } : game.rabbitPos;
+	checkRabbitPosition();
 };
 
-Game.prototype.checkRabbitPosition = function () {
-	this.rabbitPos.y = (this.rabbitPos.y + this.boardSize) % this.boardSize;
-	this.rabbitPos.y = this.ifThereIsA(this.barriersPos, this.rabbitPos) ? (this.rabbitPos.y === 0 ? this.boardSize - 1 : 0) : this.rabbitPos.y;
-	this.rabbitPos.x = (this.rabbitPos.x + this.boardSize) % this.boardSize;
-	this.rabbitPos.x = this.ifThereIsA(this.barriersPos, this.rabbitPos) ? (this.rabbitPos.x === 0 ? this.boardSize - 1 : 0) : this.rabbitPos.x;
-	this.createBoardElements();
+const checkRabbitPosition = () => {
+	game.rabbitPos.y = (game.rabbitPos.y + game.boardSize) % game.boardSize;
+	game.rabbitPos.y = ifThereIsA(game.barriersPos, game.rabbitPos) ? (game.rabbitPos.y === 0 ? game.boardSize - 1 : 0) : game.rabbitPos.y;
+	game.rabbitPos.x = (game.rabbitPos.x + game.boardSize) % game.boardSize;
+	game.rabbitPos.x = ifThereIsA(game.barriersPos, game.rabbitPos) ? (game.rabbitPos.x === 0 ? game.boardSize - 1 : 0) : game.rabbitPos.x;
+	createBoardElements();
 };
 
-Game.prototype.wolfStep = function () {
-	this.wolvesPos = this.wolfNeighborCell.map(elem => {
-		const wolvesNeighbor = this.matrix.filter(matrixElem => this.ifThereIsA(elem, matrixElem));
+const wolfStep = () => {
+	game.wolvesPos = game.wolfNeighborCell.map(elem => {
+		const wolvesNeighbor = game.matrix.filter(matrixElem => ifThereIsA(elem, matrixElem));
 		const min = Math.min(...wolvesNeighbor.map(wolf => wolf.g));
 		const wolf = wolvesNeighbor.find(wolf => wolf.g === min);
-		this.matrix.splice(this.matrix.indexOf(wolf), 1);
+		game.matrix.splice(game.matrix.indexOf(wolf), 1);
 		return wolf;
 	});
-	this.createBoardElements();
+	createBoardElements();
 };
 
-Game.prototype.createBoardElements = function () {
+const createBoardElements = () => {
 	const ArrayOfColumns = [];
 	const matrixForCount = [];
-	const wolfNeighborCell = [];
-	for (let i = 0; i < this.boardSize; i++) {
+	const wolfNeighborCellArray = [];
+	for (let i = 0; i < game.boardSize; i++) {
 		const column = [];
 		const inMatrixColl = [];
-		for (let j = 0; j < this.boardSize; j++) {
-			const g = Math.pow(Math.abs(this.rabbitPos.x - i), 2) + Math.pow(Math.abs(this.rabbitPos.y - j), 2);
-			const ifRabbit = this.ifThereIsA([this.rabbitPos], { x: i, y: j });
-			const ifHouse = this.ifThereIsA([this.housePos], { x: i, y: j });
-			const ifBarrier = this.ifThereIsA(this.barriersPos, { x: i, y: j });
-			const ifWolf = this.ifThereIsA(this.wolvesPos, { x: i, y: j });
+		for (let j = 0; j < game.boardSize; j++) {
+			const g = Math.pow(Math.abs(game.rabbitPos.x - i), 2) + Math.pow(Math.abs(game.rabbitPos.y - j), 2);
+			const ifRabbit = ifThereIsA([game.rabbitPos], { x: i, y: j });
+			const ifHouse = ifThereIsA([game.housePos], { x: i, y: j });
+			const ifBarrier = ifThereIsA(game.barriersPos, { x: i, y: j });
+			const ifWolf = ifThereIsA(game.wolvesPos, { x: i, y: j });
 			if (ifWolf) {
-				column.push(this.wolf);
+				column.push(game.wolf);
 				inMatrixColl.push({ g, x: i, y: j });
 				const newNeighborWolf = [];
-				if (i < this.boardSize - 1) { newNeighborWolf.push({ x: i + 1, y: j }) };
+				if (i < game.boardSize - 1) { newNeighborWolf.push({ x: i + 1, y: j }) };
 				if (i > 0) { newNeighborWolf.push({ x: i - 1, y: j }) };
 				if (j > 0) { newNeighborWolf.push({ x: i, y: j - 1 }) };
-				if (j < this.boardSize - 1) { newNeighborWolf.push({ x: i, y: j + 1 }) };
-				wolfNeighborCell.push(newNeighborWolf);
+				if (j < game.boardSize - 1) { newNeighborWolf.push({ x: i, y: j + 1 }) };
+				wolfNeighborCellArray.push(newNeighborWolf);
 			} else if (ifRabbit) {
-				column.push(this.rabbit);
+				column.push(game.rabbit);
 				inMatrixColl.push({ g, x: i, y: j });
 			} else if (ifBarrier) {
-				column.push(this.barrier);
+				column.push(game.barrier);
 			} else if (ifHouse) {
-				column.push(this.house);
+				column.push(game.house);
 			} else {
-				column.push(this.cell);
+				column.push(game.cell);
 				inMatrixColl.push({ g, x: i, y: j });
 			}
 		}
 		matrixForCount.push(inMatrixColl);
 		ArrayOfColumns.push(column);
 	}
-	this.wolfNeighborCell = wolfNeighborCell;
-	this.matrix = matrixForCount.flat();
-	this.boardElements = ArrayOfColumns;
+	game.wolfNeighborCell = wolfNeighborCellArray;
+	game.matrix = matrixForCount.flat();
+	game.boardElements = ArrayOfColumns;
 };
 
-Game.prototype.ifThereIsA = function (into, it) {
+const ifThereIsA = (into, it) => {
 	return into.some(e => (e.x === it.x) && (e.y === it.y));
 };
 
-Game.prototype.render = function () {
-	this.board.innerHTML = null;
-	this.boardElements.forEach(classesArray => {
+const render = () => {
+	game.board.innerHTML = null;
+	game.boardElements.forEach(classesArray => {
 		const column = document.createElement('div');
 		classesArray.forEach(className => {
 			const cell = document.createElement('div');
 			cell.classList.add(className);
 			column.append(cell);
 		});
-		this.board.append(column);
+		game.board.append(column);
 	});
 }
 
-Game.prototype.checkVictory = function () {
-	const rabbitWins = this.housePos.x === this.rabbitPos.x && this.housePos.y === this.rabbitPos.y;
-	const wolfWins = this.wolvesPos.some(wolfPos => wolfPos.x === this.rabbitPos.x && wolfPos.y === this.rabbitPos.y);
+const checkVictory = () => {
+	const rabbitWins = game.housePos.x === game.rabbitPos.x && game.housePos.y === game.rabbitPos.y;
+	const wolfWins = game.wolvesPos.some(wolfPos => wolfPos.x === game.rabbitPos.x && wolfPos.y === game.rabbitPos.y);
 	const victory = rabbitWins ? 'WIN' : (wolfWins ? 'LOSS' : null);
 	if (victory) {
 		const textInfo = document.getElementsByClassName('text-style')[0];
@@ -160,16 +160,13 @@ Game.prototype.checkVictory = function () {
 	}
 };
 
-let a = new Game();
-a.render();
-
 const body = document.body;
 const info = document.getElementById('info');
 
 body.addEventListener('change', change);
 function change(e) {
-	a.setParticipants(+e.target.value);
-	a.render();
+	setParticipants(+e.target.value);
+	render();
 	e.stopPropagation();
 }
 
@@ -177,17 +174,19 @@ body.addEventListener('click', clickAction);
 function clickAction(e) {
 	switch (e.target.value) {
 		case 'start':
-			a.createRandomCoords();
-			a.createBoardElements();
-			a.render();
+			createRandomCoords();
+			createBoardElements();
+			render();
 			info.classList.add('display-none');
 			break;
 		case 'up': case 'down': case 'left': case 'right':
-			a.rabbitStep(e.target.value);
-			a.wolfStep();
-			a.render();
-			a.checkVictory()
+			rabbitStep(e.target.value);
+			wolfStep();
+			render();
+			checkVictory()
 			break;
 	}
 	e.stopPropagation();
 };
+
+render();
