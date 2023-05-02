@@ -2,15 +2,44 @@
 body{
 	position: relative;
 }
+
+.root-wrapper{
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
+}
+
+/* increment button */
+.increment-button{
+	display: block;
+	margin: 0.3rem auto;
+	width: 8rem;
+	min-height: 2rem;
+	border-radius: 0.4rem;
+	font-size: 1rem;
+	font-weight: 700;
+}
+
+.increment-button:hover{
+	box-shadow: 0px 0px 10px 1px red;
+}
+
 /* app */
 .game{
+	margin-top: 1.5rem;
 	display: flex;
 	justify-content: center;
+	align-self: flex-start;
+	flex-shrink: 0;
 }
 
 /* gameground */
 .game__wrapper{
 	padding: 10px;
+	border: 1px solid black;
+	border-radius: 0.5rem;
+	box-shadow: 0px 0px 20px 0px red;
+
 }
 
 .background-aqua{
@@ -21,6 +50,33 @@ body{
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+}
+/* select */
+.select{
+	width: 5.5rem;
+	font-size: 1.2rem;
+	border-radius: 0.5rem;
+	text-align: center;
+	background-color: aqua;
+}
+
+.select:hover{
+	box-shadow: 0px 0px 5px 1px red;
+}
+
+/* start */
+.start{
+	margin: 0.25rem 0 0.5rem 0;
+	width: 6rem;
+	height: 3rem;
+	font-size: 1.5rem;
+	font-weight: 500;
+	background-color: aqua;
+	border-radius: 0.5rem;
+}
+
+.start:hover{
+	box-shadow: 0px 0px 5px 1px red;
 }
 
 /* board */
@@ -40,9 +96,9 @@ body{
 
 /* Buttons Block */
 .buttons__wrapper{
+	margin-top: 0.5rem;
 	display: flex;
 	align-items: end;
-	background-color: black;
 }
 
 .flex-nowrapp{
@@ -55,21 +111,35 @@ body{
 	flex-direction: column;
 }
 
-.background-red{
-	background-color: red;
-}
+
 
 /* Button */
+.button-horizontal{
+	width: 50px;
+	height: 30px;
+}
+
 .button{
-	width: 30px;
-	height: 20px;
+	font-size: 1.2rem;
+	font-weight: 600;
+	border-radius: 0.5rem;
+	margin: 0.1rem;
+}
+
+.button-vertical{
+	width: 40px;
+	height: 30px;
+}
+
+.button:hover{
+	box-shadow: 0px 0px 5px 1px red;
 }
 
 /* cell */
 .cell{
 	width: 40px;
 	height: 40px;
-	background-color: blueviolet;
+	background-color: rgb(66, 218, 58,.4);
 	border: 1px solid black;
 }
 
@@ -81,7 +151,7 @@ body{
 	background-image: url('../image/rabbit.png');
 	background-size: cover;
   background-repeat: no-repeat;
-	background-color: blueviolet;
+	background-color: rgb(66, 218, 58,.4);
 	border: 1px solid black;
 }
 
@@ -94,7 +164,7 @@ body{
 	background-size: cover;
   background-repeat: no-repeat;
 	transition: all 0.5s ease-out;
-	background-color: blueviolet;
+	background-color: rgb(66, 218, 58,.4);
 	border: 1px solid black;
 }
 
@@ -107,7 +177,7 @@ body{
 	background-size: cover;
   background-repeat: no-repeat;
 	transition: all 0.5s ease-out;
-	background-color: blueviolet;
+	background-color: rgb(66, 218, 58,.4);
 	border: 1px solid black;
 }
 
@@ -120,7 +190,7 @@ body{
 	background-size: cover;
   background-repeat: no-repeat;
 	transition: all 0.5s ease-out;
-	background-color: blueviolet;
+	background-color: rgb(66, 218, 58,.4);
 	border: 1px solid black;
 }
 
