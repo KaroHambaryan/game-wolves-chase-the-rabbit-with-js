@@ -166,78 +166,71 @@ class Game {
 	}
 }
 
-const addButton = document.getElementById('addButton');
+const checkViktoryInfoSetings = i => {
+	info.querySelectorAll('.info-option').forEach(element => element.value = i + "." + parseInt(element.innerText));
+	info.querySelector('.info-start').value = i + info.querySelector('.info-start').value.match(/[a-zA-Z]+/g).join('');
+}
+
+const body = document.body;
 const root = document.getElementById('root');
 const info = document.querySelector('.info');
 const game = document.querySelector('.game');
 
-const initialGame = Game.of('gameBoard');
+const initialGame = Game.of('gameBoard-0');
 initialGame.render();
 
-game.addEventListener('change', change);
+const memory = { "0": initialGame, };
+
+body.addEventListener('change', change);
 function change(e) {
-	initialGame.setParticipants(+e.target.value);
-	initialGame.render();
+	if (e.target.value) {
+		let i = +e.target.value.split('.')[0];
+		let value = +e.target.value.split('.')[1];
+		memory[`${i}`].setParticipants(value);
+		memory[`${i}`].render();
+	}
 	e.stopPropagation();
 }
 
-game.addEventListener('click', clickAction);
+let count = 0;
+body.addEventListener('click', clickAction);
 function clickAction(e) {
-	switch (e.target.value) {
-		case '':
-			break;
-		case 'start':
-			initialGame.createRandomCoords();
-			initialGame.createBoardElements();
-			initialGame.render();
-			info.classList.add('display-none');
-			break;
-		case 'up': case 'down': case 'left': case 'right':
-			initialGame.rabbitStep(e.target.value);
-			initialGame.checkVictory();
-			initialGame.wolfStep();
-			initialGame.checkVictory();
-			initialGame.render();
-			break;
+	if (isNaN(e.target.value)) {
+		let i = parseInt(e.target.value);
+		let value = e.target.value.match(/[a-zA-Z]+/g).join('');
+		switch (value) {
+			case 'plus':
+				count++;
+				const newItem = document.createElement('div');
+				newItem.classList.add('game');
+				newItem.innerHTML = game.innerHTML;
+				newItem.querySelectorAll('.option').forEach(element => element.value = count + "." + parseInt(element.innerText));
+				newItem.querySelectorAll('.start, .button').forEach(element => element.value = count + element.value.match(/[a-zA-Z]+/g).join(''));
+				const newId = newItem.querySelector('.board').id = document.querySelector('.board').id.split('-')[0] + "-" + count;
+				root.appendChild(newItem);
+				memory[`${count}`] = Game.of(newId);
+				memory[`${count}`].render();
+				break;
+			case 'start':
+				memory[`${i}`].createRandomCoords();
+				memory[`${i}`].createBoardElements();
+				memory[`${i}`].render();
+				info.classList.add('display-none');
+				checkViktoryInfoSetings(i);
+				break;
+			case 'up': case 'down': case 'left': case 'right':
+				let useMemo;
+				memory[`${i}`].rabbitStep(value);
+				memory[`${i}`].checkVictory();
+				memory[`${i}`].wolfStep();
+				memory[`${i}`].checkVictory();
+				memory[`${i}`].render();
+				if (useMemo !== i) {
+					checkViktoryInfoSetings(i);
+					useMemo = i;
+				}
+				break;
+		}
 	}
 	e.stopPropagation();
 };
-
-let count = 0;
-addButton.addEventListener('click', (e) => {
-	count++;
-	const newItem = document.createElement('div');
-	newItem.classList.add('game');
-	newItem.innerHTML = game.innerHTML;
-	root.appendChild(newItem);
-
-	const newId = newItem.querySelector('.board').id = document.querySelector('.board').id + count;
-	const newGame = Game.of(newId);
-
-	newItem.addEventListener('change', (e) => {
-		newGame.setParticipants(+e.target.value);
-		newGame.render();
-		e.stopPropagation();
-	});
-
-	newItem.addEventListener('click', (e) => {
-		switch (e.target.value) {
-			case 'start':
-				newGame.createRandomCoords();
-				newGame.createBoardElements();
-				newGame.render();
-				break;
-			case 'up': case 'down': case 'left': case 'right':
-				newGame.rabbitStep(e.target.value);
-				newGame.checkVictory();
-				newGame.wolfStep();
-				newGame.checkVictory();
-				newGame.render();
-				break;
-		}
-		e.stopPropagation();
-	});
-
-	newGame.render();
-	e.stopPropagation();
-});
