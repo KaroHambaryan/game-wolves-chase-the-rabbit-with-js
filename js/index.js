@@ -166,7 +166,7 @@ class Game {
 	}
 }
 
-const checkViktoryInfoSetings = i => {
+const checkViktoryInfoSettings = i => {
 	info.querySelectorAll('.info-option').forEach(element => element.value = i + "." + parseInt(element.innerText));
 	info.querySelector('.info-start').value = i + info.querySelector('.info-start').value.match(/[a-zA-Z]+/g).join('');
 }
@@ -216,19 +216,19 @@ function clickAction(e) {
 				memory[`${i}`].createBoardElements();
 				memory[`${i}`].render();
 				info.classList.add('display-none');
-				checkViktoryInfoSetings(i);
+				checkViktoryInfoSettings(i);
 				break;
 			case 'up': case 'down': case 'left': case 'right':
 				let useMemo;
+				if (useMemo !== i) {
+					checkViktoryInfoSettings(i);
+					useMemo = i;
+				}
 				memory[`${i}`].rabbitStep(value);
 				memory[`${i}`].checkVictory();
 				memory[`${i}`].wolfStep();
 				memory[`${i}`].checkVictory();
 				memory[`${i}`].render();
-				if (useMemo !== i) {
-					checkViktoryInfoSetings(i);
-					useMemo = i;
-				}
 				break;
 		}
 	}
