@@ -1,8 +1,6 @@
 'use strict';
 const newGameData = () => {
-	const root = document.getElementById('root');
 	return {
-		board: (root.lastElementChild).querySelector('#board'),
 		randomCoords: [],
 		rabbitPos: { x: 0, y: 0 },
 		housePos: { x: 4, y: 4 },
@@ -18,15 +16,16 @@ const newGameData = () => {
 		countOfParticipants: 7,
 		countOfWolves: 3,
 		countOfBarriers: 2,
-		wolfNeighborCell: [],
-		matrix: [],
-		boardElements: new Array(5).fill(0).map(() => new Array(5).fill(0).map(() => 'cell')),
+		victory_Status: null,
+		Array_Probable_Moves_Wolves: [],
+		matrix_With_Cordinates_For_Counting: [],
+		matrix_With_Board_Cell_Classes: new Array(5).fill(0).map(() => new Array(5).fill(0).map(() => 'cell')),
 	}
 }
 
 const setParticipants = data => x => {
 	data.boardSize = x;
-	data.boardElements = new Array(data.boardSize).fill(0).map(() => new Array(data.boardSize).fill(0).map(() => 'cell'));
+	data.matrix_With_Board_Cell_Classes = new Array(data.boardSize).fill(0).map(() => new Array(data.boardSize).fill(0).map(() => 'cell'));
 	data.countOfParticipants = data.boardSize + data.incrementCoefficient;
 	data.countOfWolves = Math.floor((data.countOfParticipants - data.incrementCoefficient) * 60 / 100);
 	data.countOfBarriers = (data.countOfParticipants - data.incrementCoefficient) - data.countOfWolves;
@@ -87,23 +86,23 @@ const checkRabbitPosition = data => {
 };
 
 const wolfStep = data => {
-	data.wolvesPos = data.wolfNeighborCell.map(elem => {
-		const wolvesNeighbor = data.matrix.filter(matrixElem => ifThereIsA(elem, matrixElem));
-		const min = Math.min(...wolvesNeighbor.map(wolf => wolf.g));
-		const wolf = wolvesNeighbor.find(wolf => wolf.g === min);
-		data.matrix.splice(data.matrix.indexOf(wolf), 1);
-		return wolf;
+	data.matrix_With_Cordinates_For_Counting = data.matrix_With_Cordinates_For_Counting.flat();
+	data.wolvesPos = data.Array_Probable_Moves_Wolves.map(probable_Moves_Of_One_Wolf => {
+		const probable_Moves = data.matrix_With_Cordinates_For_Counting.filter(coordinates => ifThereIsA(probable_Moves_Of_One_Wolf, coordinates));
+		const min = Math.min(...probable_Moves.map(wolf => wolf.g));
+		const coordinates_to_Next_Step_Wolf = probable_Moves.find(wolf => wolf.g === min);
+		data.matrix_With_Cordinates_For_Counting.splice(data.matrix_With_Cordinates_For_Counting.indexOf(coordinates_to_Next_Step_Wolf), 1);
+		return coordinates_to_Next_Step_Wolf;
 	});
 	return data;
 };
 
-const createBoardElements = data => {
-	const ArrayOfColumns = [];
-	const matrixForCount = [];
-	const wolfNeighborCellArray = [];
+const generateBoardData = data => {
+	data.matrix_With_Board_Cell_Classes = [];
+	data.matrix_With_Cordinates_For_Counting = [];
 	for (let i = 0; i < data.boardSize; i++) {
-		const column = [];
-		const inMatrixColl = [];
+		const cell_Classes = [];
+		const cordinates_For_Counting = [];
 		for (let j = 0; j < data.boardSize; j++) {
 			const g = Math.pow(Math.abs(data.rabbitPos.x - i), 2) + Math.pow(Math.abs(data.rabbitPos.y - j), 2);
 			const ifRabbit = ifThereIsA([data.rabbitPos], { x: i, y: j });
@@ -111,45 +110,53 @@ const createBoardElements = data => {
 			const ifBarrier = ifThereIsA(data.barriersPos, { x: i, y: j });
 			const ifWolf = ifThereIsA(data.wolvesPos, { x: i, y: j });
 			if (ifWolf) {
-				column.push(data.wolf);
-				inMatrixColl.push({ g, x: i, y: j });
-				const newNeighborWolf = [];
-				if (i < data.boardSize - 1) { newNeighborWolf.push({ x: i + 1, y: j }) };
-				if (i > 0) { newNeighborWolf.push({ x: i - 1, y: j }) };
-				if (j > 0) { newNeighborWolf.push({ x: i, y: j - 1 }) };
-				if (j < data.boardSize - 1) { newNeighborWolf.push({ x: i, y: j + 1 }) };
-				wolfNeighborCellArray.push(newNeighborWolf);
+				cell_Classes.push(data.wolf);
+				cordinates_For_Counting.push({ g, x: i, y: j });
 			} else if (ifRabbit) {
-				column.push(data.rabbit);
-				inMatrixColl.push({ g, x: i, y: j });
+				cell_Classes.push(data.rabbit);
+				cordinates_For_Counting.push({ g, x: i, y: j });
 			} else if (ifBarrier) {
-				column.push(data.barrier);
+				cell_Classes.push(data.barrier);
 			} else if (ifHouse) {
-				column.push(data.house);
+				cell_Classes.push(data.house);
 			} else {
-				column.push(data.cell);
-				inMatrixColl.push({ g, x: i, y: j });
+				cell_Classes.push(data.cell);
+				cordinates_For_Counting.push({ g, x: i, y: j });
 			}
 		}
-		matrixForCount.push(inMatrixColl);
-		ArrayOfColumns.push(column);
+		data.matrix_With_Cordinates_For_Counting.push(cordinates_For_Counting);
+		data.matrix_With_Board_Cell_Classes.push(cell_Classes);
 	}
-	data.wolfNeighborCell = wolfNeighborCellArray;
-	data.matrix = matrixForCount.flat();
-	data.boardElements = ArrayOfColumns;
 	return data;
 };
 
+const createProbableWolfМove = (data) => {
+	data.Array_Probable_Moves_Wolves = [];
+	data.wolvesPos.forEach(wolfPos => {
+		const probable_Moves_Of_One_Wolf = [];
+		let i = wolfPos.x;
+		let j = wolfPos.y;
+		if (i < data.boardSize - 1) { probable_Moves_Of_One_Wolf.push({ x: i + 1, y: j }) };
+		if (i > 0) { probable_Moves_Of_One_Wolf.push({ x: i - 1, y: j }) };
+		if (j > 0) { probable_Moves_Of_One_Wolf.push({ x: i, y: j - 1 }) };
+		if (j < data.boardSize - 1) { probable_Moves_Of_One_Wolf.push({ x: i, y: j + 1 }) };
+		data.Array_Probable_Moves_Wolves.push(probable_Moves_Of_One_Wolf);
+	})
+	return data;
+}
+
 const render = data => {
-	data.board.innerHTML = null;
-	data.boardElements.forEach(classesArray => {
-		const column = document.createElement('div');
+	const root = document.getElementById('root');
+	const board = (root.lastElementChild).querySelector('#board');
+	board.innerHTML = null;
+	data.matrix_With_Board_Cell_Classes.forEach(classesArray => {
+		const cell_Classes = document.createElement('div');
 		classesArray.forEach(className => {
 			const cell = document.createElement('div');
 			cell.classList.add(className);
-			column.append(cell);
+			cell_Classes.append(cell);
 		});
-		data.board.append(column);
+		board.append(cell_Classes);
 	});
 	return data;
 }
@@ -157,7 +164,7 @@ const render = data => {
 const checkVictory = data => {
 	const rabbitWins = data.housePos.x === data.rabbitPos.x && data.housePos.y === data.rabbitPos.y;
 	const wolfWins = data.wolvesPos.some(wolfPos => wolfPos.x === data.rabbitPos.x && wolfPos.y === data.rabbitPos.y);
-	const victory = rabbitWins ? 'WIN' : (wolfWins ? 'LOSS' : null);
+	data.victory_Status = rabbitWins ? 'WIN' : (wolfWins ? 'LOSS' : null);
 	const start = () => {
 		renderOnRandomPositions(data);
 		displayNone();
@@ -168,14 +175,13 @@ const checkVictory = data => {
 		changeboard(+val.target.value);
 	};
 
-	if (victory) {
+	if (data.victory_Status) {
 		const info = document.querySelector("#info");
-		info.querySelector('.text-style').textContent = victory;
+		info.querySelector('.text-style').textContent = data.victory_Status;
 		info.classList.remove('display-none');
 		info.querySelector('.start').onclick = start;
 		info.querySelector('.select').onchange = change;
 	}
-
 	return data;
 };
 
@@ -185,7 +191,7 @@ const root = document.getElementById('root');
 const game = root.querySelector('.game');
 const data = newGameData();
 
-const renderOnRandomPositions = compose(render, createBoardElements, filterRandomCoordinates, createRandomCoords);
+const renderOnRandomPositions = compose(render, createProbableWolfМove, generateBoardData, filterRandomCoordinates, createRandomCoords);
 
 const change = (val) => {
 	const changeboard = compose(render, setParticipants(data));
@@ -193,7 +199,7 @@ const change = (val) => {
 };
 
 const moveParticipants = (val) => {
-	const move = compose(render, checkVictory, createBoardElements, wolfStep, checkVictory, createBoardElements, checkRabbitPosition, rabbitStep(data));
+	const move = compose(render, checkVictory, createProbableWolfМove, generateBoardData, wolfStep, checkVictory, createProbableWolfМove, generateBoardData, checkRabbitPosition, rabbitStep(data));
 	move(val);
 };
 
@@ -205,8 +211,8 @@ const displayNone = () => info.classList.add('display-none');
 
 const createCopy = () => {
 	const clone = game.cloneNode(true);
-
 	root.appendChild(clone);
+
 	const data = newGameData();
 
 	const start = () => {
@@ -214,7 +220,7 @@ const createCopy = () => {
 	};
 
 	const moveParticipants = (val) => {
-		const move = compose(render, checkVictory, createBoardElements, wolfStep, checkVictory, createBoardElements, checkRabbitPosition, rabbitStep(data));
+		const move = compose(render, checkVictory, createProbableWolfМove, generateBoardData, wolfStep, checkVictory, createProbableWolfМove, generateBoardData, checkRabbitPosition, rabbitStep(data));
 		move(val.target.value);
 	};
 
